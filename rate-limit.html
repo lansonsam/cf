@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudflare - 请求频率限制</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-image: url('mian.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        
+        .glass-container {
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: linear-gradient(to right, rgba(250, 164, 26, 0.1), rgba(250, 164, 26, 0.2));
+        }
+        
+        h1 {
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            row-gap: 12px;
+            margin: 15px 0 25px;
+            font-size: 14px;
+        }
+        
+        .info-label {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .info-value {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .message {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .timer-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .timer {
+            font-size: 24px;
+            font-weight: 600;
+            color: #faa41a;
+        }
+        
+        .shield-icon {
+            display: block;
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 20px;
+            background: rgba(250, 164, 26, 0.15);
+            border-radius: 50%;
+            padding: 12px;
+            box-shadow: 0 0 20px rgba(250, 164, 26, 0.2);
+        }
+        
+        .shield-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #fff;
+        }
+        
+        .reload-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .reload-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-container">
+        <div class="header">
+            <div class="shield-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+                </svg>
+            </div>
+            <h1>请求频率受限</h1>
+            <div class="subtitle">您的请求频率过高，已被临时限制</div>
+        </div>
+        
+        <div class="content">
+            <div class="message">
+                为了保护我们的服务器免受过多请求的影响，系统已暂时限制您的访问。请等待一段时间后再尝试访问，或减少您的请求频率。
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-label">客户端 IP</div>
+                <div class="info-value">::CLIENT_IP::</div>
+                
+                <div class="info-label">Ray ID</div>
+                <div class="info-value">::RAY_ID::</div>
+                
+                <div class="info-label">地理位置</div>
+                <div class="info-value">::GEO::</div>
+            </div>
+            
+            <div class="timer-container">
+                <p>您可以在以下时间后重试:</p>
+                <div class="timer" id="countdown">60</div>
+            </div>
+            
+            <button class="reload-btn disabled" id="reload-btn" disabled>请等待倒计时结束后重试</button>
+            
+            <div style="display:none">
+                ::CLOUDFLARE_ERROR_500S_BOX::
+                ::CLOUDFLARE_ERROR_1000S_BOX::
+                ::CAPTCHA_BOX::
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 倒计时功能
+        const countdownEl = document.getElementById('countdown');
+        const reloadBtn = document.getElementById('reload-btn');
+        let timeLeft = 60;
+        
+        const countdown = setInterval(() => {
+            timeLeft--;
+            countdownEl.textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                reloadBtn.textContent = '重新加载页面';
+                reloadBtn.classList.remove('disabled');
+                reloadBtn.disabled = false;
+            }
+        }, 1000);
+        
+        // 重新加载按钮
+        reloadBtn.addEventListener('click', () => {
+            if (!reloadBtn.disabled) {
+                window.location.reload();
+            }
+        });
+    </script>
+</body>
+</html> 
