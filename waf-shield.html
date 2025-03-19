@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudflare WAF盾 - 访问受限</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-image: url('mian.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        
+        .glass-container {
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: linear-gradient(to right, rgba(200, 50, 50, 0.1), rgba(200, 50, 50, 0.2));
+        }
+        
+        h1 {
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            row-gap: 12px;
+            margin: 15px 0 25px;
+            font-size: 14px;
+        }
+        
+        .info-label {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .info-value {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .message {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .captcha-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .shield-icon {
+            display: block;
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 20px;
+            background: rgba(200, 50, 50, 0.15);
+            border-radius: 50%;
+            padding: 12px;
+            box-shadow: 0 0 20px rgba(200, 50, 50, 0.2);
+        }
+        
+        .shield-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-container">
+        <div class="header">
+            <div class="shield-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/>
+                </svg>
+            </div>
+            <h1>访问已被禁止</h1>
+            <div class="subtitle">您的IP已被WAF规则拦截</div>
+        </div>
+        
+        <div class="content">
+            <div class="message">
+                您的访问请求已被网站的Web应用防火墙(WAF)拦截。您当前的IP地址或行为与恶意流量模式相匹配，因此访问被封禁。如有疑问，请联系网站管理员。
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-label">客户端 IP</div>
+                <div class="info-value">::CLIENT_IP::</div>
+                
+                <div class="info-label">Ray ID</div>
+                <div class="info-value">::RAY_ID::</div>
+                
+                <div class="info-label">地理位置</div>
+                <div class="info-value">::GEO::</div>
+            </div>
+            
+            <div class="captcha-container">
+                <div>::CAPTCHA_BOX::</div>
+            </div>
+            
+            <div style="display:none">
+                ::CLOUDFLARE_ERROR_500S_BOX::
+                ::CLOUDFLARE_ERROR_1000S_BOX::
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
